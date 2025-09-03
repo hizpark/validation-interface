@@ -15,8 +15,10 @@ A lightweight, framework-agnostic validation contract package that provides gene
 ## ✨ 特性
 
 - 轻量级与无依赖：独立于任何框架或外部库，易于集成到现有项目中
-- 明确定义的接口：提供标准化的验证器和验证结果接口，支持灵活扩展与自定义
-- 灵活集成与扩展：作为独立组件使用，或方便地集成进任意現代架构和系统中
+- 基于抽象类的验证器：提供 `AbstractValidator`，子类只需实现 `validate()` 方法
+- 构造注入对象：验证器接收目标对象，避免类型不确定问题
+- 保留 `ValidationResult` 和 `ValidationResultInterface`，提供统一的验证结果封装
+- 灵活集成与扩展：适合各种业务对象和自定义规则实现
 
 ## 📦 安装
 
@@ -32,7 +34,7 @@ src
 │   ├── ValidationResultInterface.php
 │   └── ValidationResult.php
 └── Validator
-    └── ValidatorInterface.php
+    └── AbstractValidator.php
 ```
 
 ## 🚀 用法示例
@@ -41,18 +43,17 @@ src
 
 ```php
 use Hizpark\ValidationInterface\Result\ValidationResult;
-use Hizpark\ValidationInterface\Result\ValidationResultInterface;
-use Hizpark\ValidationInterface\Validator\ValidatorInterface;
+use Hizpark\ValidationInterface\Validator\AbstractValidator;
 
-class EmailValidator implements ValidatorInterface
+class EmailValidator extends AbstractValidator
 {
-    public function validate(mixed $target): ValidationResultInterface
+    public function validate(): ValidationResult
     {
-        if (!is_string($target) || !filter_var($target, FILTER_VALIDATE_EMAIL)) {
-            return ValidationResult::fail('Invalid email address', 'INVALID_EMAIL');
+        if (!is_string($this->target) || !filter_var($this->target, FILTER_VALIDATE_EMAIL)) {
+            return $this->fail('Invalid email address', 'INVALID_EMAIL');
         }
 
-        return ValidationResult::ok();
+        return $this->ok();
     }
 }
 ```
@@ -60,9 +61,9 @@ class EmailValidator implements ValidatorInterface
 ### 示例 2：执行验证并处理结果
 
 ```php
-$validator = new EmailValidator();
-
-$result = $validator->validate('user@example.com');
+$email = 'user@example.com';
+$validator = new EmailValidator($email);
+$result = $validator->validate();
 
 if ($result->isValid()) {
     echo "Email is valid.";
@@ -71,43 +72,43 @@ if ($result->isValid()) {
 }
 ```
 
-## 📐 接口说明
+## 📐 接口与抽象类说明
 
-### ValidatorInterface
+### AbstractValidator
 
-> 定义验证器的通用行为，每个实现类应实现 validate() 方法，接收任意类型的输入并返回验证结果对象
+> 验证器基类，每个子类接收目标对象并实现 validate() 方法返回 ValidationResult
 
 ```php
 namespace Hizpark\ValidationInterface\Validator;
 
-use Hizpark\ValidationInterface\Result\ValidationResultInterface;
+use Hizpark\ValidationInterface\Result\ValidationResult;
 
-interface ValidatorInterface
+abstract class AbstractValidator
 {
-    public function validate(mixed $target): ValidationResultInterface;
+    protected object $target;
+
+    public function __construct(object $target)
+    {
+        $this->target = $target;
+    }
+
+    abstract public function validate(): ValidationResult;
+
+    protected function ok(): ValidationResult
+    {
+        return ValidationResult::ok();
+    }
+
+    protected function fail(string $error, ?string $code = null): ValidationResult
+    {
+        return ValidationResult::fail($error, $code);
+    }
 }
 ```
 
-### ValidationResultInterface
+### ValidationResultInterface & ValidationResult
 
-> 用于表示验证操作的结果，包含是否通过验证、错误信息与错误代码
-
-```php
-namespace Hizpark\ValidationInterface\Result;
-
-interface ValidationResultInterface
-{
-    public function isValid(): bool;
-    public function getError(): ?string;
-    public function getCode(): ?string;
-}
-```
-
-## ⬜ 实例说明
-
-### `ValidationResult`
-
-> `ValidationResultInterface` 接口实现及扩展
+> 用于表示验证结果，封装验证是否通过、错误信息与错误代码
 
 ```php
 namespace Hizpark\ValidationInterface\Result;
