@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Hizpark\ValidationInterface\Result;
 
+use Hizpark\ValidationInterface\ValidationResultInterface;
+
 class ValidationResult implements ValidationResultInterface
 {
     public function __construct(

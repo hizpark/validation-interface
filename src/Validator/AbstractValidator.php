@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Hizpark\ValidationInterface\Validator;
 
 use Hizpark\ValidationInterface\Result\ValidationResult;
+use Hizpark\ValidationInterface\ValidatorInterface;
 
-abstract class AbstractValidator
+abstract class AbstractValidator implements ValidatorInterface
 {
     // 具体验证的对象
     protected object $target;

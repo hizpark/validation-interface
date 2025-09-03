@@ -31,10 +31,11 @@ composer require hizpark/validation-interface
 ```txt
 src
 ├── Result
-│   ├── ValidationResultInterface.php
 │   └── ValidationResult.php
-└── Validator
-    └── AbstractValidator.php
+├── Validator
+│   └── AbstractValidator.php
+├── ValidationResultInterface.php
+└── ValidatorInterface.php
 ```
 
 ## 🚀 用法示例
@@ -62,7 +63,7 @@ class EmailValidator extends AbstractValidator
 
 ```php
 $email = 'user@example.com';
-$validator = new EmailValidator($email);
+$validator = new EmailValidator($email);  // 目标对象通过构造传入
 $result = $validator->validate();
 
 if ($result->isValid()) {
@@ -82,8 +83,9 @@ if ($result->isValid()) {
 namespace Hizpark\ValidationInterface\Validator;
 
 use Hizpark\ValidationInterface\Result\ValidationResult;
+use Hizpark\ValidationInterface\ValidatorInterface;
 
-abstract class AbstractValidator
+abstract class AbstractValidator implements ValidatorInterface
 {
     protected object $target;
 
